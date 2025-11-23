@@ -776,14 +776,14 @@ async deleteProgramConfirm2() {
       const regex = new RegExp(`(${this.searchQuery2})`, "gi");
       return text.replace(regex, `<span class="highlight">$1</span>`);
     },
+
+
     async addProgram() {
-  try {
     const username = localStorage.getItem("username"); // Ambil username dari localStorage
     if (!username) {
       this.showNotification("User Belum Login!", false);
       return;
     }
-
 
     // Pastikan semua field diisi
     if (!this.form.kategori || !this.form.preprogram || !this.form.periode) {
@@ -798,7 +798,6 @@ async deleteProgramConfirm2() {
       accounts_id_accounts: username,       // Sudah sesuai
     };
 
-
     const response = await api.post("/programs/post", payload);
     this.showNotification("Program Berhasil Ditambahkan!", true);
     
@@ -806,23 +805,6 @@ async deleteProgramConfirm2() {
     this.form.preprogram = "";
     this.form.periode = "";
     this.fetchPrograms();
-
-  } catch (error) {
-    console.error("Gagal menambahkan program", error);
-
-    // Tangani error dari backend
-    if (error.response) {
-      if (error.response.status === 409) {
-        this.showNotification("Program dengan nama tersebut sudah ada!", false);
-      } else if (error.response.status === 400) {
-        this.showNotification("Semua field wajib diisi!", false);
-      } else {
-        this.showNotification("Terjadi kesalahan saat menambahkan program!", false);
-      }
-    } else {
-      this.showNotification("Tidak dapat terhubung ke server!", false);
-    }
-  }
 },
 
 updateHargaFields() {
@@ -870,6 +852,13 @@ updateHargaFields() {
     }
   },
 
+  formatToDecimal(value) {
+    if (!value || value.trim() === "") return null;
+    // Langsung return float/number biar enak divalidasi
+    const num = parseFloat(value.replace(/\./g, '').replace(',', '.')); 
+    return isNaN(num) ? null : num; 
+},
+
   async addPaket() {
     // Ambil nilai dari form
     const program = document.getElementById("program").value;
@@ -879,14 +868,6 @@ updateHargaFields() {
     const airline_path = document.getElementById("maskapai").value;
     const include_text = document.getElementById("Include").value;
     const note = document.getElementById("catatan").value;
-
-    // Fungsi untuk format angka ke decimal
-    const formatToDecimal = (value) => {
-      if (!value || value.trim() === "") return null;
-      // Hilangkan semua titik dan ubah ke decimal
-      const numberValue = parseFloat(value.replace(/\./g, '').replace(',', '.'));
-      return isNaN(numberValue) ? null : numberValue.toFixed(2);
-    };
 
     // Format nilai harga ke decimal dengan 2 digit
     const quad = formatToDecimal(document.getElementById("quad").value);
@@ -919,8 +900,6 @@ updateHargaFields() {
       note,
     };
 
-    try {
-      // Kirim data ke API
       const response = await api.post("/packages/post", data);
       
       if (response.data.code === 200) {
@@ -930,11 +909,7 @@ updateHargaFields() {
       } else {
         this.showNotification("Gagal menambahkan paket: " + response.data.message, false);
       }
-    } catch (error) {
-      console.error("Error:", error);
-      this.handleErrorResponse(error);
-    }
-  },
+    },
 
   handleErrorResponse(error) {
     if (error.response) {
